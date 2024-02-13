@@ -1,0 +1,11 @@
+version: '3'
+services:
+  backend_server:
+    image: hacku-2024-myj-backend-server
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - '8000:8000'
+    environment:
+      - TZ=Asia/Tokyo
