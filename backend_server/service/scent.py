@@ -28,15 +28,11 @@ def _convert_to_single_measurements(
 def _get_gas_diff(
     measurement_list: list[scent_schema.ScentSingleMeasurement],
     offset=10,
-    ndigits=4,
 ):
     return [
-        round(
-            measurement_list[i + 1].gas_value
-            - measurement_list[i].gas_value
-            + offset,
-            ndigits,
-        )
+        measurement_list[i + 1].gas_value
+        - measurement_list[i].gas_value
+        + offset
         for i in range(len(measurement_list) - 1)
     ]
 
@@ -63,6 +59,7 @@ def create_scent(db: Session, obj_in: scent_schema.ScentDBCreate):
 
 def convert_api_data_to_db_data(
     scent_data: scent_schema.ScentApiCreate,
+    ndigits: int = 5,
 ):
     now_time = dt.datetime.now()
     measurement_li = _convert_to_single_measurements(scent_data)
@@ -107,13 +104,22 @@ def convert_api_data_to_db_data(
     # すべてのセットの平均を取る
     db_in = scent_schema.ScentDBCreate(
         sensored_at=now_time,
-        temperature=mean([i.temperature for i in measurement_set_li]),
-        humidity=mean([i.humidity for i in measurement_set_li]),
-        pressure=mean([i.pressure for i in measurement_set_li]),
+        temperature=round(
+            mean([i.temperature for i in measurement_set_li]),
+            ndigits,
+        ),
+        humidity=round(
+            mean([i.humidity for i in measurement_set_li]),
+            ndigits,
+        ),
+        pressure=round(
+            mean([i.pressure for i in measurement_set_li]),
+            ndigits,
+        ),
         # i.gas_feature is a 13-dim vector
         # take average of each dimension
         gas_feature=[
-            round(mean(j), 3)
+            round(mean(j), ndigits)
             for j in zip(*[i.gas_feature for i in measurement_set_li])
         ],
     )
