@@ -123,6 +123,6 @@ def convert_api_data_to_db_data(
             for j in zip(*[i.gas_feature for i in measurement_set_li])
         ],
     )
-    logger.debug(db_in)
+    logger.debug(db_in.model_dump_json(indent=2))
 
     return db_in
