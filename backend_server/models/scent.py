@@ -1,4 +1,5 @@
-from sqlalchemy import Column, DateTime, Double, Integer, JSON
+from sqlalchemy import JSON, Column, DateTime, Double, Integer
+from sqlalchemy.orm import relationship
 
 from backend_server.database import Base
 
@@ -12,3 +13,6 @@ class Scent(Base):
     humidity = Column(Double, nullable=False)
     pressure = Column(Double, nullable=False)
     gas_feature = Column(JSON, nullable=False)
+
+    item = relationship("Item", back_populates="scent")
+    # user_scent_meta = relationship("UserScentMeta", back_populates="scent")
