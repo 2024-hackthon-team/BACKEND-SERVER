@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend_server.api import scent_router, server_info_router
+from backend_server.api import item_router, scent_router, server_info_router
 from backend_server.config import config
 
 if config.deploy_env != "production":
@@ -13,6 +13,7 @@ if config.deploy_env != "production":
 app = FastAPI()
 app.include_router(server_info_router)
 app.include_router(scent_router)
+app.include_router(item_router)
 
 
 app.add_middleware(
