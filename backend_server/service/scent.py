@@ -62,18 +62,20 @@ def convert_api_data_to_db_data(
     ndigits: int = 5,
 ):
     now_time = dt.datetime.now()
-    measurement_li = _convert_to_single_measurements(scent_data)
-    measurement_li = _align_measurement_list(measurement_li)
+    meas_li = _convert_to_single_measurements(scent_data)
+    meas_li = _align_measurement_list(meas_li)
 
     correct_index_set = set(range(10))
-    measurement_set_li: list[scent_schema.ScentDBCreate] = []
-    while measurement_li:
-        one_set = sorted(measurement_li[:10], key=lambda x: x.index)
+    meas_set_li: list[scent_schema.ScentDBCreate] = []
+
+    # 10個のデータを1セットとして扱う
+    while meas_li:
+        one_set = sorted(meas_li[:10], key=lambda x: x.index)
 
         # 1セットに0~9のindexのデータがあるかどうか
         # ない場合は、このセットをスキップ
         if correct_index_set != (
-            index_set := {measurement.index for measurement in one_set}
+            index_set := {meas.index for meas in one_set}
         ):
             logger.warning(
                 f"Find missing index: {correct_index_set - index_set} at set:"
@@ -81,11 +83,11 @@ def convert_api_data_to_db_data(
             for i in one_set:
                 logger.warning(i)
 
-            measurement_li.pop(0)
-            measurement_li = _align_measurement_list(measurement_li)
+            meas_li.pop(0)
+            meas_li = _align_measurement_list(meas_li)
             continue
 
-        measurement_set_li.append(
+        meas_set_li.append(
             scent_schema.ScentDBCreate(
                 sensored_at=now_time,
                 temperature=mean([i.temperature for i in one_set]),
@@ -99,28 +101,22 @@ def convert_api_data_to_db_data(
         )
 
         # TODO: filter out all
-        measurement_li = measurement_li[10:]
+        meas_li = meas_li[10:]
+
+    if not meas_set_li:
+        return None
 
     # すべてのセットの平均を取る
     db_in = scent_schema.ScentDBCreate(
         sensored_at=now_time,
-        temperature=round(
-            mean([i.temperature for i in measurement_set_li]),
-            ndigits,
-        ),
-        humidity=round(
-            mean([i.humidity for i in measurement_set_li]),
-            ndigits,
-        ),
-        pressure=round(
-            mean([i.pressure for i in measurement_set_li]),
-            ndigits,
-        ),
+        temperature=round(mean([i.temperature for i in meas_set_li]), ndigits),
+        humidity=round(mean([i.humidity for i in meas_set_li]), ndigits),
+        pressure=round(mean([i.pressure for i in meas_set_li]), ndigits),
         # i.gas_feature is a 13-dim vector
         # take average of each dimension
         gas_feature=[
             round(mean(j), ndigits)
-            for j in zip(*[i.gas_feature for i in measurement_set_li])
+            for j in zip(*[i.gas_feature for i in meas_set_li])
         ],
     )
     logger.debug(db_in.model_dump_json(indent=2))
