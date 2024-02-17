@@ -1,7 +1,7 @@
 import typing as T
 from functools import lru_cache
 
-from pydantic import ConfigDict, Field, MySQLDsn
+from pydantic import ConfigDict, Field, MySQLDsn, computed_field
 from pydantic_settings import BaseSettings
 
 
@@ -39,6 +39,7 @@ class Config(BaseSettings):
     )
     mysql_database: str = Field(..., exclude=True, repr=False)
 
+    @computed_field()
     @property
     def mysql_url(self) -> MySQLDsn:
         return _build_mysql_host(
