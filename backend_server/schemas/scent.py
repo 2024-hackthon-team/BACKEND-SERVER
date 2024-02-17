@@ -1,6 +1,6 @@
 import datetime as dt
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # MARK: - For API
@@ -26,14 +26,13 @@ class ScentSingleMeasurement(BaseModel):
 
 # MARK: - For database
 class ScentDBCreate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     sensored_at: dt.datetime
     temperature: float
     humidity: float
     pressure: float
     gas_feature: list[float] = Field(..., min_items=19, max_items=19)
-
-    class Config:
-        orm_mode = True
 
 
 class ScentDB(ScentDBCreate):
