@@ -3,7 +3,7 @@ from fastapi.logger import logger
 
 from backend_server.config import config
 
-router = APIRouter()
+router = APIRouter(tags=["server_info"])
 
 
 @router.get("/health_check")

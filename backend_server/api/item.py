@@ -5,7 +5,7 @@ import backend_server.models.item as item_model
 import backend_server.schemas.item as item_schema
 from backend_server.database import get_db
 
-router = APIRouter()
+router = APIRouter(tags=["item"])
 
 
 @router.post("/item", response_model=item_schema.ItemApiRead)
@@ -32,6 +32,7 @@ async def create_item(
 
     item = item_model.Item(**obj_in)
     db.add(item)
+    # TODO: handle exception foreign key not found
     db.commit()
     db.refresh(item)
 
@@ -56,11 +57,9 @@ async def read_item(
     "/item/{item_id}/scent",
     # TODO: response_model=
 )
-def update_item_scent(
+def register_scent_to_item(
     item_id: int,
     scent_id: int,
     db: Session = Depends(get_db),
 ):
-    return (
-        f"not implemented, item_id`{item_id}`をの香りをscent_id`{scent_id}`に指定"
-    )
+    return f"not implemented, item_id`{item_id}`をの香りをscent_id`{scent_id}`に指定"

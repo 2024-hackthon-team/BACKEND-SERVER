@@ -8,6 +8,6 @@ class UserScentMeta(Base):
     __tablename__ = "user_scent_meta"
 
     id = Column(Integer, primary_key=True)
-    label = Column(String(100), nullable=False, default="新しい香り")
+    label = Column(String(128), nullable=False, default="新しい香り")
     scent_id = Column(Integer, ForeignKey("scents.id"), nullable=False)
     scent = relationship("Scent", back_populates="user_scent_meta")

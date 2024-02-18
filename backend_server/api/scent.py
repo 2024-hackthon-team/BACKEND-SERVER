@@ -5,7 +5,7 @@ import backend_server.schemas.scent as scent_schema
 import backend_server.service.scent as scent_service
 from backend_server.database import get_db
 
-router = APIRouter()
+router = APIRouter(tags=["scent"])
 
 
 @router.post(
