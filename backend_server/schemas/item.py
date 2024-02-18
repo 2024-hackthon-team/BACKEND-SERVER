@@ -5,6 +5,7 @@ class ItemBase(BaseModel):
     item_name: str
     product_label: str
     scent_id: int | None = None
+    img_url: str | None = None
 
 
 class ItemApiCreate(ItemBase):
