@@ -1,4 +1,6 @@
 .vscode/
+db_back_up/
+tests/test.http
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
