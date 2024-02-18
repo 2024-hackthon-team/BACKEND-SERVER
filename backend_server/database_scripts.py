@@ -13,7 +13,7 @@ for path in Path("./backend_server/models").glob("*.py"):
         importlib.import_module(f"backend_server.models.{path.stem}")
 
 
-def backup_database(
+def _backup_database(
     *,
     inspector,
     db_session,
@@ -56,18 +56,17 @@ def backup_database(
         json.dump(jsonable_encoder(data), f, ensure_ascii=False, indent=4)
 
 
-def reset_database(*, db_engine):
+def _reset_database(*, db_engine):
     Base.metadata.drop_all(bind=db_engine)
     Base.metadata.create_all(bind=db_engine)
 
 
-if __name__ == "__main__":
+def migrate_db():
     db_engine.echo = False
     inspector = inspect(db_engine)
-
     print("バックアップ中...")
     try:
-        backup_database(
+        _backup_database(
             inspector=inspector,
             db_session=db_session,
         )
@@ -77,5 +76,5 @@ if __name__ == "__main__":
             raise
 
     print("リセット中...")
-    reset_database(db_engine=db_engine)
+    _reset_database(db_engine=db_engine)
     print("完了")
