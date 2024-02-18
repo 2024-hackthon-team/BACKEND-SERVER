@@ -10,6 +10,7 @@ router = APIRouter(tags=["scent"])
 
 @router.post(
     "/scent",
+    response_model=scent_schema.ScentApiCreateResponse,
     responses={
         400: {
             "description": "Invalid scent data",
@@ -27,6 +28,8 @@ def create_item_scent(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid scent data",
         )
-    scent_service.create_scent(db, db_obj_in)
+    scent_in_db = scent_service.create_scent(db, db_obj_in)
 
-    return {"message": "post scent data completed."}
+    return scent_schema.ScentApiCreateResponse(
+        scent_id=scent_in_db.id,
+    )

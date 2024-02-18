@@ -10,8 +10,9 @@ class ScentApiCreate(BaseModel):
     pressure: list[float]
     gas_value: list[float]
 
-    # TODO: item_id
-    # TODO: item_id
+
+class ScentApiCreateResponse(BaseModel):
+    scent_id: int
 
 
 class ScentSingleMeasurement(BaseModel):
