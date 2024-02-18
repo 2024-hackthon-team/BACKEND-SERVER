@@ -8,7 +8,10 @@ from backend_server.database import get_db
 router = APIRouter(tags=["item"])
 
 
-@router.post("/item", response_model=item_schema.ItemApiRead)
+@router.post(
+    "/item",
+    response_model=item_schema.ItemApiRead,
+)
 async def create_item(
     item: item_schema.ItemApiCreate,
     db: Session = Depends(get_db),
@@ -39,7 +42,10 @@ async def create_item(
     return item
 
 
-@router.get("/item/{item_id}", response_model=item_schema.ItemApiRead)
+@router.get(
+    "/item/{item_id}",
+    response_model=item_schema.ItemApiRead,
+)
 async def read_item(
     item_id: int,
     db: Session = Depends(get_db),
@@ -55,11 +61,24 @@ async def read_item(
 
 @router.patch(
     "/item/{item_id}/scent",
-    # TODO: response_model=
+    response_model=item_schema.ItemApiRead,
+    # ! Not implemented
+    summary="Not implemented",
 )
 def register_scent_to_item(
     item_id: int,
     scent_id: int,
     db: Session = Depends(get_db),
 ):
-    return f"not implemented, item_id`{item_id}`をの香りをscent_id`{scent_id}`に指定"
+    # TODO: implement
+    return item_schema.ItemApiRead(
+        id=item_id,
+        item_name="item_name",
+        product_label="product_label",
+        scent_id=scent_id,
+        img_url="img_url",
+        item_tags=[
+            item_schema.ItemTagApiRead(id=1, item_tag_name="tag1"),
+            item_schema.ItemTagApiRead(id=2, item_tag_name="tag2"),
+        ],
+    )
