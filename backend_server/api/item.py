@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import backend_server.models.item as item_model
@@ -34,10 +35,19 @@ async def create_item(
         obj_in["item_tags"].append(item_tag)
 
     item = item_model.Item(**obj_in)
-    db.add(item)
-    # TODO: handle exception foreign key not found
-    db.commit()
-    db.refresh(item)
+
+    try:
+        db.add(item)
+        db.commit()
+        db.refresh(item)
+        # errの種類を指定してエラーを返す
+    except IntegrityError as e:
+        if "foreign key constraint" in str(e) and "scent_id" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Scent not found",
+            )
+        raise e
 
     return item
 
