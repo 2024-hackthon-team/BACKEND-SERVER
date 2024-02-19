@@ -15,4 +15,4 @@ class Scent(Base):
     gas_feature = Column(JSON, nullable=False)
 
     item = relationship("Item", back_populates="scent")
-    # user_scent_meta = relationship("UserScentMeta", back_populates="scent")
+    user_scent_meta = relationship("UserScentMeta", back_populates="scent")
