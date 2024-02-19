@@ -6,6 +6,7 @@
 
 2. `docker-compose up`を実行する
 
+3. `sh ./scripts/migrate_db.sh`を実行する
 
 # Note
 
