@@ -47,21 +47,24 @@ def create_user_scent(
 @router.get(
     "/user_scents",
     response_model=list[user_scent_schema.UserScentApiRead],
-    # ! Not implemented
-    summary="Not implemented",
 )
 def get_multiple_user_scent(
     offset: int = 0,
     limit: int = 10,
     desc: bool = True,
+    db: Session = Depends(get_db),
 ):
-    return [
-        user_scent_schema.UserScentApiRead(
-            id=1,
-            label="新しい香り",
-            scent_id=1,
+    return (
+        db.query(user_scent_meta_model.UserScentMeta)
+        .order_by(
+            user_scent_meta_model.UserScentMeta.id.desc()
+            if desc
+            else user_scent_meta_model.UserScentMeta.id
         )
-    ] * limit
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.patch(
