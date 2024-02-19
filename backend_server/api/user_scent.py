@@ -62,19 +62,20 @@ def update_user_scent(
 
 @router.get(
     "/user_scent/{user_scent_id}/similar_scent_items",
-    response_model=list[item_schema.ItemApiRead],
+    response_model=list[item_schema.ItemApiResultRead],
     tags=["item"],
     # ! Not implemented
     summary="Not implemented",
 )
 def find_similar_scent_items(user_scent_id: int):
     return [
-        item_schema.ItemApiRead(
+        item_schema.ItemApiResultRead(
             id=1,
             item_name="item_name",
             product_label="product_label",
             scent_id=1,
             img_url="img_url",
+            similarity=0.5,
             item_tags=[
                 item_schema.ItemTagApiRead(id=1, item_tag_name="tag1"),
                 item_schema.ItemTagApiRead(id=2, item_tag_name="tag2"),

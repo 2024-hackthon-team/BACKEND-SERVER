@@ -28,3 +28,7 @@ class ItemApiRead(ItemBase):
     @field_serializer("item_tags")
     def serialize_item_tags(item_tags: list[ItemTagApiRead]) -> list[str]:
         return [item_tag.item_tag_name for item_tag in item_tags]
+
+
+class ItemApiResultRead(ItemApiRead):
+    similarity: float
