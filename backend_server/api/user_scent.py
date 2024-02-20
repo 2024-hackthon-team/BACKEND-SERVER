@@ -1,4 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
@@ -8,17 +15,42 @@ import backend_server.schemas.scent as scent_schema
 import backend_server.schemas.user_scent as user_scent_schema
 import backend_server.service.scent as scent_service
 from backend_server.database import get_db
+from backend_server.service.websocket import ConnectionManager, get_ws_manager
 
 router = APIRouter(tags=["user_scent"])
+
+
+@router.websocket("/ws/user_scent")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    ws_manager: ConnectionManager = Depends(get_ws_manager),
+):
+    await ws_manager.connect(websocket)
+    await ws_manager.send_personal_message(
+        user_scent_schema.WebSocketMessage(message="Connected, Welcome!"),
+        websocket,
+    )
+    try:
+        while True:
+            await websocket.receive_text()
+            await ws_manager.send_personal_message(
+                user_scent_schema.WebSocketMessage(
+                    message="Warning: You should not send any message"
+                ),
+                websocket,
+            )
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
 
 
 @router.post(
     "/user_scent",
     response_model=user_scent_schema.UserScentApiRead,
 )
-def create_user_scent(
+async def create_user_scent(
     scent_api_data: scent_schema.ScentApiCreate,
     db: Session = Depends(get_db),
+    ws_manager: ConnectionManager = Depends(get_ws_manager),
 ):
     # Create scent
     db_obj_in = scent_service.convert_api_data_to_db_data(scent_api_data)
@@ -40,7 +72,9 @@ def create_user_scent(
     db.refresh(user_scent_meta)
 
     # Notify web client
-    # TODO: User ws to notify web client
+    await ws_manager.broadcast(
+        user_scent_schema.WebSocketMessage(message="New user scent created")
+    )
 
     return user_scent_meta
 
