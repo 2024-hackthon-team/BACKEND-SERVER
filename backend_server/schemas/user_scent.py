@@ -14,3 +14,7 @@ class UserScentApiRead(UserScentDBCreate):
 
 class UserScentApiUpdate(BaseModel):
     label: str
+
+
+class WebSocketMessage(BaseModel):
+    message: str
