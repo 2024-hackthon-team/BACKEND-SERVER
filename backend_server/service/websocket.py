@@ -26,7 +26,10 @@ class ConnectionManager:
         message: user_scent_schema.WebSocketMessage,
     ):
         for connection in self.active_connections:
-            await connection.send_text(message.model_dump_json())
+            try:
+                await connection.send_text(message.model_dump_json())
+            except RuntimeError:
+                self.active_connections.remove(connection)
 
 
 manager = ConnectionManager()
