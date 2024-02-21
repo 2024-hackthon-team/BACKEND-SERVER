@@ -37,9 +37,9 @@ def convert_csv_to_dict(file_path: str) -> T.Generator[dict, None, None]:
                 continue
             yield {
                 "item_name": row["item_name"],
-                "product_label": row["classification"],
+                "product_label": row["product_label"],
                 # "img_url": row["img_url"],
-                "item_tags": row["feature"].split(","),
+                "item_tags": row["item_tag"].split(","),
             }
 
 
