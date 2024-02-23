@@ -3,9 +3,9 @@
 $ python scripts/insert_item_via_api.py "./hacku_item - シート1.csv"
 """
 
-import typing as T
 import csv
 import sys
+import typing as T
 from pathlib import Path
 
 import requests
@@ -33,13 +33,17 @@ def convert_csv_to_dict(file_path: str) -> T.Generator[dict, None, None]:
     with open(file_path, newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            if not all(row.values()):
+            # pick item_name, product_label, its values are not empty
+            if not all(row.get(key) for key in ["item_name", "product_label"]):
+                print(f"Skipped: {row}")
                 continue
             yield {
                 "item_name": row["item_name"],
                 "product_label": row["product_label"],
-                # "img_url": row["img_url"],
-                "item_tags": row["item_tag"].split(","),
+                "img_url": row["img_url"],
+                "item_tags": (
+                    row["item_tag"].split(",") if row.get("item_tag") else []
+                ),
             }
 
 
