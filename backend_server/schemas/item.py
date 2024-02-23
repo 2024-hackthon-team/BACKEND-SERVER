@@ -25,7 +25,7 @@ class ItemApiRead(ItemBase):
     id: int
     item_tags: list[ItemTagApiRead] = []
 
-    @field_serializer("item_tags")
+    @field_serializer("item_tags", when_used="json")
     def serialize_item_tags(item_tags: list[ItemTagApiRead]) -> list[str]:
         return [item_tag.item_tag_name for item_tag in item_tags]
 

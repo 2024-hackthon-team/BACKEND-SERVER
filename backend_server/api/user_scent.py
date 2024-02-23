@@ -10,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 import backend_server.models.user_scent_meta as user_scent_meta_model
+import backend_server.models.item as item_model
 import backend_server.schemas.item as item_schema
 import backend_server.schemas.scent as scent_schema
 import backend_server.schemas.user_scent as user_scent_schema
@@ -138,21 +139,39 @@ def update_user_scent(
     "/user_scent/{user_scent_id}/similar_scent_items",
     response_model=list[item_schema.ItemApiResultRead],
     tags=["item"],
-    # ! Not implemented
-    summary="Not implemented",
 )
-def find_similar_scent_items(user_scent_id: int):
-    return [
-        item_schema.ItemApiResultRead(
-            id=1,
-            item_name="item_name",
-            product_label="product_label",
-            scent_id=1,
-            img_url="img_url",
-            similarity=0.5,
-            item_tags=[
-                item_schema.ItemTagApiRead(id=1, item_tag_name="tag1"),
-                item_schema.ItemTagApiRead(id=2, item_tag_name="tag2"),
-            ],
+def find_similar_scent_items(
+    user_scent_id: int,
+    db: Session = Depends(get_db),
+):
+    user_scent = db.query(user_scent_meta_model.UserScentMeta).get(
+        user_scent_id
+    )
+    if user_scent is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User scent not found",
         )
-    ] * 10
+
+    item_li = db.query(item_model.Item).all()
+    if not item_li:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No item found",
+        )
+
+    item_similarities = scent_service.find_similar_scent_items(
+        user_scent,
+        item_li,
+    )
+
+    for item, similarity in item_similarities:
+        item.similarity = similarity
+
+    sorted_response = sorted(
+        [item for item, _ in item_similarities],
+        key=lambda x: x.similarity,
+        reverse=True,
+    )
+
+    return sorted_response

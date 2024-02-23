@@ -1,11 +1,17 @@
 import datetime as dt
+import typing as T
 from statistics import mean
 
+import numpy as np
 from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
 from sqlalchemy.orm import Session
 
+import backend_server.models.item as item_model
 import backend_server.models.scent as scent_model
+import backend_server.models.user_scent_meta as user_scent_meta_model
 import backend_server.schemas.scent as scent_schema
 
 
@@ -122,3 +128,54 @@ def convert_api_data_to_db_data(
     logger.debug(db_in.model_dump_json(indent=2))
 
     return db_in
+
+
+def scent_to_vector(
+    scent: scent_model.Scent,
+    vector_type: T.Literal[
+        "with_air", "without_air", "without_air_diff"
+    ] = "with_air",
+):
+
+    gas_feature = scent.gas_feature
+    match vector_type:
+        case "without_air":
+            return np.array(gas_feature)
+        case "without_air_diff":
+            return np.array(gas_feature[:10])
+        case "with_air":
+            return np.array(
+                [
+                    scent.temperature,
+                    scent.humidity,
+                    scent.pressure,
+                    *gas_feature,
+                ]
+            )
+        case _:
+            raise ValueError("Invalid type")
+
+
+def find_similar_scent_items(
+    user_scent: user_scent_meta_model.UserScentMeta,
+    item_li: list[item_model.Item],
+    vector_type: T.Literal[
+        "with_air", "without_air", "without_air_diff"
+    ] = "with_air",
+    standard_scaler: StandardScaler = None,
+) -> list[T.Tuple[item_model.Item, float]]:
+
+    vector_list = [
+        scent_to_vector(item.scent, vector_type) for item in item_li
+    ]
+    if standard_scaler is None:
+        standard_scaler = StandardScaler()
+        standard_scaler.fit(vector_list)
+
+    vector_list = standard_scaler.transform(vector_list)
+    target_vector = standard_scaler.transform(
+        [scent_to_vector(user_scent.scent, vector_type)]
+    )
+    res = cosine_similarity(vector_list, target_vector)
+
+    return list(zip(item_li, res))
